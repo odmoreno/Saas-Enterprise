@@ -4,12 +4,23 @@ class SchemaTenantMiddleware:
         # One-time configuration and initialization.
 
     def __call__(self, request):
-        # Code to be executed for each request before
-        # the view (and later middleware) are called.
-        print(request)
-        response = self.get_response(request)
-        print(response)
-        # Code to be executed for each request/response after
-        # the view is called.
+        host = request.get_host()
+        host_portless = host.split(":")[0]
+        host_split = host_portless.split(".")
+        subdomain = None
+        if len(host_split) > 1:
+            subdomain = host_split[0]
+        print("Host:", host, request.scheme, host_split, subdomain)
+        return self.get_response(request)
 
-        return response
+    def set_search_path(self, schema_name):
+        from django.db import connection
+
+        with connection.cursor() as cursor:
+            cursor.execute(f'SET search_path TO "{schema_name}";')
+            print(f"Search path set to {schema_name}")
+
+    def get_schema_name(self, subdomain=None):
+        if subdomain is None:
+            return "public"
+        return
