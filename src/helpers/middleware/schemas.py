@@ -11,9 +11,12 @@ class SchemaTenantMiddleware:
         if len(host_split) > 1:
             subdomain = host_split[0]
         print("Host:", host, request.scheme, host_split, subdomain)
+        schema_name = self.get_schema_name(subdomain=subdomain)
+        self.set_search_path(schema_name)
         return self.get_response(request)
 
     def set_search_path(self, schema_name):
+        print("activate the schema", schema_name)
         from django.db import connection
 
         with connection.cursor() as cursor:
@@ -23,4 +26,8 @@ class SchemaTenantMiddleware:
     def get_schema_name(self, subdomain=None):
         if subdomain is None:
             return "public"
+        if subdomain == "localhost":
+            return "public"
+        if subdomain == "cfe":
+            return "example"
         return
