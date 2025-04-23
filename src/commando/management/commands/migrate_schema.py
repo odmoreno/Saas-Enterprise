@@ -26,7 +26,7 @@ class Command(BaseCommand):
         # query set
         qs = Tenant.objects.filter(active=True)
         # schemas = list(qs.values_list("schema_name", flat=True))
-        skip_public = True
+        skip_public = False
         print("qs:", qs)
 
         if not skip_public:

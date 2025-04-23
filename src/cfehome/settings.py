@@ -121,6 +121,20 @@ if DATABASE_URL is not None:
         )
     }
 
+# REDIS CACHING
+
+REDIS_CACHE_URL = config("REDIS_CACHE_URL", default=None)
+
+if REDIS_CACHE_URL is not None:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_CACHE_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        }
+    }
 
 # Add these at the top of your settings.py
 # from os import getenv
@@ -161,10 +175,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Django Allauth Config
 LOGIN_REDIRECT_URL = "/"
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_AUTHENTICATION_METHOD = "username"
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_EMAIL_SUBJECT_PREFIX = "[CFE] "
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_REQUIRED = False
 
 AUTHENTICATION_BACKENDS = [
     # ...
