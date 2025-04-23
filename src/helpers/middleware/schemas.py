@@ -1,3 +1,9 @@
+from django.apps import apps
+from django.db import connection
+
+from helpers.db.schemas import (use_public_schema, activate_tenent_schema)
+from helpers.db import statements as db_statements
+
 class SchemaTenantMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -12,22 +18,21 @@ class SchemaTenantMiddleware:
             subdomain = host_split[0]
         print("Host:", host, request.scheme, host_split, subdomain)
         schema_name = self.get_schema_name(subdomain=subdomain)
-        self.set_search_path(schema_name)
+        activate_tenent_schema(schema_name)
         return self.get_response(request)
 
-    def set_search_path(self, schema_name):
-        print("activate the schema", schema_name)
-        from django.db import connection
-
-        with connection.cursor() as cursor:
-            cursor.execute(f'SET search_path TO "{schema_name}";')
-            print(f"Search path set to {schema_name}")
-
     def get_schema_name(self, subdomain=None):
-        if subdomain is None:
+        if subdomain in [None, "localhost", "desalda"]:
             return "public"
-        if subdomain == "localhost":
-            return "public"
-        if subdomain == "cfe":
-            return "example"
-        return
+        schema_name = "public"
+        with use_public_schema():
+            Tenant = apps.get_model("tenants", "Tenant")
+            try:
+                obj = Tenant.objects.get(subdomain=subdomain)
+                schema_name = obj.schema_name
+            except Tenant.DoesNotExist:
+                print(f"{subdomain} does not exist")
+            except Exception as e:
+                print(f"{subdomain} does not exist {e}")
+
+        return schema_name

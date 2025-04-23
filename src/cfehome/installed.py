@@ -16,6 +16,7 @@ DEFAULT_APPS = [
     "widget_tweaks",
 ]
 
+# tenant/entreprise apps
 _CUSTOMER_INSTALLED_APPS = DEFAULT_APPS + [
     # my-apps
     "commando",
@@ -23,11 +24,13 @@ _CUSTOMER_INSTALLED_APPS = DEFAULT_APPS + [
     "visits",
 ]
 
+# public schema default installed apps
 _INSTALLED_APPS = DEFAULT_APPS + [
     # my-apps
     "commando",
     "customers",
     "profiles",
     "subscriptions",
+    "tenants",
     "visits",
 ]

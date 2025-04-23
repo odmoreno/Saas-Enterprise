@@ -15,26 +15,22 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any):
         # another way to import the Tenant model
         Tenant = apps.get_model("tenants", "Tenant")
-        print("Tenant model:", Tenant)
-        with connection.cursor() as cursor:
-            cursor.execute(
-                db_statements.CREATE_SCHEMA_SQL.format(schema_name="public")
-            )
-            cursor.execute(
-                db_statements.ACTIVATE_SCHEMA_SQL.format(schema_name="public")
-            )
         # query set
-        qs = Tenant.objects.filter(active=True)
-        # schemas = list(qs.values_list("schema_name", flat=True))
+        qs = Tenant.objects.all()
+        schemas = ["example"]
         skip_public = True
-        print("qs:", qs)
 
         if not skip_public:
-            call_command("migrate", interactive=False)
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    db_statements.CREATE_SCHEMA_SQL.format(schema_name="public")
+                )
+                cursor.execute(
+                    db_statements.ACTIVATE_SCHEMA_SQL.format(schema_name="public")
+                )
+                call_command("migrate", interactive=False)
 
-        for tenant_obj in qs:
-            schema_name = tenant_obj.schema_name
-            print("schema_name:", schema_name)
+        for schema_name in schemas:
             # Check if the schema already exists
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -49,8 +45,7 @@ class Command(BaseCommand):
 
                 if not schema_exists:
                     cursor.execute(
-                        db_statements.CREATE_SCHEMA_SQL.format(
-                            schema_name=schema_name)
+                        db_statements.CREATE_SCHEMA_SQL.format(schema_name=schema_name)
                     )
                     self.stdout.write(
                         self.style.SUCCESS(f"Created schema '{schema_name}'")
@@ -58,8 +53,7 @@ class Command(BaseCommand):
 
                 # Set the search_path
                 cursor.execute(
-                    db_statements.ACTIVATE_SCHEMA_SQL.format(
-                        schema_name=schema_name)
+                    db_statements.ACTIVATE_SCHEMA_SQL.format(schema_name=schema_name)
                 )
 
             # Initialize the executor after setting the search path
@@ -111,8 +105,7 @@ class Command(BaseCommand):
                 # Print out which migrations are going to be applied
                 self.stdout.write(f"Applying migrations for '{app_label}':")
                 for migration in ordered_migrations:
-                    self.stdout.write(
-                        f"  - {migration.app_label}.{migration.name}")
+                    self.stdout.write(f"  - {migration.app_label}.{migration.name}")
 
                 # Apply the migrations
                 # The plan to migrate is the leaf_nodes for this app
@@ -121,6 +114,5 @@ class Command(BaseCommand):
                 executor.loader.build_graph()
 
             self.stdout.write(
-                self.style.SUCCESS(
-                    "All migrations for CUSTOMER_APPS are completed.")
+                self.style.SUCCESS("All migrations for CUSTOMER_APPS are completed.")
             )
