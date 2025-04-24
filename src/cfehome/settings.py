@@ -17,6 +17,8 @@ from .installed import _INSTALLED_APPS, _CUSTOMER_INSTALLED_APPS
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+print(f"BASE_DIR: {BASE_DIR}")
+
 # Configure Gmail for Django Emails: https://www.codingforentrepreneurs.com/blog/sending-email-in-django-from-gmail/
 
 # Email config
